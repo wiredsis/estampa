@@ -18,6 +18,7 @@ pub struct Identity {
 
 #[derive(Debug, Clone)]
 pub struct Message {
+    pub timestamp: Option<DateTime<Utc>>,
     pub sender: Identity,
     pub recipient: Identity,
     pub message: String,
@@ -164,6 +165,7 @@ impl Mailbox<'_> {
         message_file.read_to_string(&mut message)?;
 
         Ok(Message {
+            timestamp: Some(message_file.metadata()?.created()?.into()),
             sender: Identity::default(),
             recipient: self.owner.clone(),
             message,

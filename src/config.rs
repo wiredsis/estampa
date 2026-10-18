@@ -96,7 +96,7 @@ impl Config {
     }
 
     /// Finds a mailbox within the config, and constructs a mailbox type
-    pub fn mailbox(&self, identity: Identity) -> Result<mailbox::Mailbox, RequestError> {
+    pub fn mailbox(&self, identity: Identity) -> Result<mailbox::Mailbox<'_>, RequestError> {
         if identity.hostname != self.base.host {
             return Err(RequestError::DomainNotServiced);
         }

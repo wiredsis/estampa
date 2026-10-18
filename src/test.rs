@@ -16,7 +16,7 @@ const MESSAGE_BODY: &'static str = "misfin://skye@localhost Hi there!";
 
 #[tokio::test]
 async fn initialize_store() {
-    let dir = tempdir().unwrap().into_path();
+    let dir = tempdir().unwrap().keep();
 
     let config = Config {
         base: Base {
@@ -41,7 +41,7 @@ async fn initialize_store() {
 
 #[tokio::test]
 async fn generate_server_certificate() {
-    let dir = tempdir().unwrap().into_path();
+    let dir = tempdir().unwrap().keep();
 
     let cert_path = dir.clone().join("cert.pem");
     let key_path = dir.clone().join("key.pem");
@@ -83,7 +83,7 @@ async fn generate_server_certificate() {
 
 #[tokio::test]
 async fn generate_client_certificate() {
-    let dir = tempdir().unwrap().into_path();
+    let dir = tempdir().unwrap().keep();
 
     // Any errors that occur around these steps are already handled by
     // the generate_server_certificate() test. These certificates are
@@ -154,7 +154,7 @@ async fn generate_client_certificate() {
 
 #[tokio::test]
 async fn verify_certificate() {
-    let dir = tempdir().unwrap().into_path();
+    let dir = tempdir().unwrap().keep();
 
     // Any errors that occur around these steps are already handled by
     // previous tests.
@@ -281,7 +281,7 @@ async fn parse_b_request() {
 
 #[tokio::test]
 async fn store_b_request() {
-    let dir = tempdir().unwrap().into_path();
+    let dir = tempdir().unwrap().keep();
 
     // Any errors that occur around these steps are already handled by
     // previous tests.
@@ -367,6 +367,7 @@ async fn store_b_request() {
         hostname: "localhost".to_string(),
     };
     let message = Message {
+        timestamp: None,
         sender: identity.clone(),
         recipient: identity.clone(),
         message: "Hi there!".to_string(),

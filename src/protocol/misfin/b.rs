@@ -6,7 +6,7 @@ use crate::{
     protocol::AsMessage,
     tls::Cert,
 };
-use std::{path::PathBuf, str::FromStr};
+use std::{path::PathBuf, str::FromStr, time::SystemTime};
 
 #[derive(Debug)]
 pub struct Request {
@@ -48,10 +48,8 @@ impl AsMessage for Request {
         trust: PathBuf,
     ) -> Result<crate::mailbox::Message, Self::Err> {
         let mut message = Message {
-            sender: Identity {
-                mailbox: String::new(),
-                hostname: String::new(),
-            },
+            timestamp: Some(SystemTime::now().into()),
+            sender: Identity::default(),
             recipient: Identity {
                 mailbox: self.mailbox.clone(),
                 hostname: self.hostname.clone(),
@@ -63,6 +61,16 @@ impl AsMessage for Request {
             if let Some(inner) = cert {
                 let sender = Cert::verify(&inner, trust).await?;
                 message.sender = sender;
+
+                // Write metadata lines to message
+                let mut meta = format!(
+                    "{}\n{}\n{}\n",
+                    message.sender,
+                    message.recipient,
+                    message.timestamp.unwrap().to_rfc3339()
+                );
+                meta.push_str(&message.message);
+                message.message = meta;
             } else {
                 return Err(RequestError::CertificateRequired);
             }

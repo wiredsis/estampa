@@ -1,3 +1,4 @@
+use chrono::DateTime;
 use tokio_rustls::rustls::pki_types::CertificateDer;
 
 use crate::{
@@ -62,13 +63,33 @@ impl AsMessage for Request {
                 hostname: self.hostname.clone(),
             },
             message: String::new(),
+            timestamp: None,
         };
 
         if let Some(text) = self.message.clone() {
             if let Some(inner) = cert {
                 let sender = Cert::verify(&inner, trust).await?;
+
                 message.sender = sender;
-                message.message = text
+
+                // Fetch timestamp directly from message
+                message.timestamp = text
+                    .clone()
+                    .lines()
+                    .skip(2)
+                    .next()
+                    .unwrap_or("")
+                    .split(' ')
+                    .next()
+                    .map(|v| {
+                        if let Ok(ts) = DateTime::parse_from_rfc3339(v) {
+                            Some(ts.to_utc())
+                        } else {
+                            None
+                        }
+                    })
+                    .flatten();
+                message.message = text;
             } else {
                 return Err(RequestError::CertificateRequired);
             }
